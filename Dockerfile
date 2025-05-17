@@ -8,7 +8,6 @@ WORKDIR /app
 COPY . /app
 
 RUN apk add --no-cache python3 alpine-sdk git
-
 RUN pnpm install --frozen-lockfile
 RUN pnpm deploy --filter=@imput/cobalt-api --prod /prod-api-deploy
 
@@ -17,9 +16,13 @@ WORKDIR /app
 
 COPY --from=build --chown=node:node /prod-api-deploy /app
 
+RUN echo "---- CONTENTS OF /app (FINAL STAGE) - THIS IS CRITICAL ----"
+RUN ls -R -A /app
+RUN echo "---- END OF /app LISTING (FINAL STAGE) ----"
+RUN echo "---- PACKAGE.JSON IN /app (FINAL STAGE) ----"
+RUN cat /app/package.json || echo "No package.json found at /app/package.json"
+RUN echo "---- END OF PACKAGE.JSON ----"
+
 USER node
 EXPOSE 9000
-# CMD should align with the "start" script in the package.json at /app/package.json
-# which is "node src/cobalt"
-CMD [ "node", "src/cobalt.js" ] 
-# Using .js extension for explicitness, Node.js will also often resolve "src/cobalt" if it's a JS file.
+CMD [ "node", "-e", "console.log('Build successful. Container started with placeholder CMD. Check build logs for ls -R /app output and package.json content to determine correct final CMD.')" ]
