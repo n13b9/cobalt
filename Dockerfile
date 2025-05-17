@@ -9,31 +9,33 @@ COPY . /app
 RUN corepack enable
 RUN apk add --no-cache python3 alpine-sdk git
 
-# Install ALL dependencies (including devDependencies needed for building the workspace package)
-RUN pnpm install --frozen-lockfile 
+RUN pnpm install --frozen-lockfile
 
-# Build the specific API package (compiles TS to JS in its 'lib' folder)
-RUN echo "---- BUILDING @imput/cobalt-api ----"
-RUN pnpm --filter=@imput/cobalt-api build
-RUN echo "---- LISTING files in @imput/cobalt-api after build (expected to see a lib folder) ----"
-# Assuming @imput/cobalt-api is at packages/api or a similar path known from the monorepo structure
-# Adjust 'packages/api' if the actual path to @imput/cobalt-api within the monorepo is different
-RUN ls -R /app/packages/api/ 
+# We remove this because the log said "None of the selected packages has a 'build' script"
+# RUN pnpm --filter=@imput/cobalt-api build 
 
-# Now deploy the built package
-RUN echo "---- DEPLOYING @imput/cobalt-api to /prod/api ----"
-RUN pnpm deploy --filter=@imput/cobalt-api --prod /prod/api
-RUN echo "---- LISTING files in /prod/api after pnpm deploy ----"
-RUN ls -R /prod/api/
+RUN pnpm deploy --filter=@imput/cobalt-api --prod /prod-api-deploy
+
+# For debugging - to see what pnpm deploy actually created
+RUN echo "---- Contents of /prod-api-deploy ----"
+RUN ls -R /prod-api-deploy
 
 FROM base AS api
 WORKDIR /app
 
-COPY --from=build --chown=node:node /prod/api /app
+COPY --from=build --chown=node:node /prod-api-deploy /app
 
-RUN echo "---- LISTING files in /app in FINAL API STAGE ----"
-RUN ls -R /app/
+# For debugging - to see the final /app structure
+RUN echo "---- Contents of /app (final stage) ----"
+RUN ls -R /app
 
 USER node
 EXPOSE 9000
-CMD [ "node", "lib/index.js" ]
+# Adjust this CMD based on the output of "ls -R /app" from the build log
+# If the package @imput/cobalt-api has its main file as src/index.js or src/cobalt.js
+# this needs to match.
+# Let's assume the structure deployed by `pnpm deploy` places the package's own `src`
+# directory directly into `/app`.
+CMD [ "node", "src/index.js" ] 
+# OR try: CMD [ "node", "src/cobalt.js" ]
+# OR check the package.json within /app for its "main" or "start" script.
