@@ -414,6 +414,12 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
             env.apiPort +
             "\n"
         );
+        console.log(
+          Green(
+            "[API] HTTP Server successfully started and listening on port " +
+              env.apiPort
+          )
+        );
       }
 
       if (env.apiKeyURL) {
@@ -422,11 +428,24 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
 
       if (env.cookiePath) {
         Cookies.setup(env.cookiePath);
+        console.log(Green("[API] Cookies.setup() called."));
+      } else {
+        console.log(
+          Red("[API] env.cookiePath not set, skipping Cookies.setup().")
+        );
       }
 
       if (env.ytSessionServer) {
         YouTubeSession.setup();
+        console.log(Green("[API] YouTubeSession.setup() called."));
+      } else {
+        console.log(
+          Red(
+            "[API] env.ytSessionServer not set, skipping YouTubeSession.setup()."
+          )
+        );
       }
+      console.log(Green("[API] Listener callback finished."));
     }
   );
 
@@ -447,5 +466,13 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
         setTunnelPort(port);
       }
     );
+    console.log(
+      Green("[API] Cluster specific istreamer setup complete (if applicable).")
+    );
   }
+  console.log(
+    Green(
+      "[API] End of runAPI function reached in core/api.js. Event loop should be active due to server.listen()."
+    )
+  );
 };
