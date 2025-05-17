@@ -16,13 +16,6 @@ WORKDIR /app
 
 COPY --from=build --chown=node:node /prod-api-deploy /app
 
-RUN echo "---- CONTENTS OF /app (FINAL STAGE) - THIS IS CRITICAL ----"
-RUN ls -R -A /app
-RUN echo "---- END OF /app LISTING (FINAL STAGE) ----"
-RUN echo "---- PACKAGE.JSON IN /app (FINAL STAGE) ----"
-RUN cat /app/package.json || echo "No package.json found at /app/package.json"
-RUN echo "---- END OF PACKAGE.JSON ----"
-
 USER node
 EXPOSE 9000
-CMD [ "node", "-e", "console.log('Build successful. Container started with placeholder CMD. Check build logs for ls -R /app output and package.json content to determine correct final CMD.')" ]
+CMD [ "node", "src/cobalt.js" ]
